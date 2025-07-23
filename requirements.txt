@@ -1,3 +1,4 @@
 gymnasium==1.2.0
 gymnasium[other]==1.2.0
 pygame==2.6.1
+openai==1.95.1
