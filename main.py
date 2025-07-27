@@ -1,5 +1,6 @@
 from src.envs.car_tag.env import CarTagEnv
 from src.fmsps.vfmsp import VanillaFMSP
+from src.fmsps.nssp import NSSP
 
 initial_pursuer_code = """
 import numpy as np
@@ -78,25 +79,59 @@ def policy(obs):
 """
 
 
+# # Initial policy code to seed the archives [3]
+# initial_pursuer_code = """
+# import numpy as np
+# class PhiSimpleSeeker:
+#     def __init__(self):
+#         self.description = "A simple pursuer that moves towards the evader."
+#         self.__name__ = "PhiSimpleSeeker"
+#     def __call__(self, X): # X is the observation array
+#         pursuer_x, pursuer_y, _, evader_x, evader_y = X
+#         dx = evader_x - pursuer_x
+#         dy = evader_y - pursuer_y
+#         return np.arctan2(dy, dx) # Return angle towards evader
+# """
+
+# initial_evader_code = """
+# import numpy as np
+# class PsiRandomWanderer:
+#     def __init__(self):
+#         self.description = "A simple evader that moves randomly."
+#         self.__name__ = "PsiRandomWanderer"
+#     def __call__(self, X): # X is the observation array
+#         return np.random.uniform(-np.pi, np.pi) # Return a random angle
+# """
+
 if __name__ == "__main__":
 
     env = CarTagEnv(render_mode="rgb_array")
 
-    # Create vFMSP system
-    vfms = VanillaFMSP(
+    # # Create vFMSP system
+    # vfms = VanillaFMSP(
+    #     env_class=env,
+    #     initial_pursuer_code=initial_pursuer_code,initial_pursuer_code     initial_evader_code=initial_evader_code,
+    #     max_steps=300,
+    #     openai_model="gpt-4o-mini-2024-07-18"
+    # )
+
+    # # Train the system
+    # vfms.train(fm="openai", num_iterations=10, num_eval_runs=100)
+
+    # # Final evaluation
+    # print("\nFinal Evaluation:")
+    # mean_p_score, mean_e_score, mean_steps = vfms.evaluate(num_eval_runs=100)
+    # print(f"Mean Pursuer Score: {mean_p_score:.3f}")
+    # print(f"Mean Evader Score: {mean_e_score:.3f}")
+    # print(f"Mean Survived Steps: {mean_steps:.2f}")
+
+    # Create an instance of the NSSP algorithm
+    nssp_trainer = NSSP(
         env_class=env,
         initial_pursuer_code=initial_pursuer_code,
         initial_evader_code=initial_evader_code,
-        max_steps=300,
-        openai_model="gpt-4o-mini-2024-07-18"
+        max_steps_per_episode=100
     )
 
-    # Train the system
-    vfms.train(fm="openai", num_iterations=10, num_eval_runs=100)
-
-    # Final evaluation
-    print("\nFinal Evaluation:")
-    mean_p_score, mean_e_score, mean_steps = vfms.evaluate(num_eval_runs=100)
-    print(f"Mean Pursuer Score: {mean_p_score:.3f}")
-    print(f"Mean Evader Score: {mean_e_score:.3f}")
-    print(f"Mean Survived Steps: {mean_steps:.2f}")
+    # Run the training loop for a few iterations
+    nssp_trainer.train(num_iterations=1)
